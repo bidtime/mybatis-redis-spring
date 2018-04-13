@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+       Copyright 2015-2018 the original author or authors.
+
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+  <parent>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis-parent</artifactId>
+    <version>30</version>
+    <relativePath />
+  </parent>
+  -->
+  <parent>
+    <groupId>com.ecarpo.parent</groupId>
+    <artifactId>ecarpo-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.mybatis.caches</groupId>
+  <artifactId>mybatis-redis-spring</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>mybatis-redis-spring</name>
+  <description>Redis support for MyBatis Cache</description>
+  <!--
+  <url>https://github.com/mybatis/redis-cache</url>
+  -->
+	
+	<properties>
+		<!--
+		<fastjson.version>1.2.17</fastjson.version>
+		<cache-manager.version>1.0.1</cache-manager.version>
+		<commons-lang3.version>3.5</commons-lang3.version>
+		-->
+
+		<commons-lang.version>2.6</commons-lang.version>
+		<log4j.version>1.2.17</log4j.version>
+		<!--
+		<slf4j.version>1.7.12</slf4j.version>
+		-->
+		<slf4j-log4j12.version>1.7.12</slf4j-log4j12.version>
+
+		<!--
+		<junit.version>4.12</junit.version>
+		<mybatis.version>3.4.5</mybatis.version>
+		<spring-data-redis.version>2.0.6.RELEASE</spring-data-redis.version>
+	    <jedis.version>2.9.0</jedis.version>
+	    -->
+
+	</properties>
+
+	<dependencies>
+		<!-- json -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${commons-lang.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j-log4j12.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+		<dependency>
+		    <groupId>org.springframework.data</groupId>
+		    <artifactId>spring-data-redis</artifactId>
+		    <version>${spring-data-redis.version}</version>
+		</dependency>
+		
+	    <dependency>
+	      <groupId>redis.clients</groupId>
+	      <artifactId>jedis</artifactId>
+	      <version>${jedis.version}</version>
+	      <scope>compile</scope>
+	    </dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+		<dependency>
+		    <groupId>org.mybatis</groupId>
+		    <artifactId>mybatis</artifactId>
+		    <version>${mybatis.version}</version>
+		</dependency>
+		
+		<!--
+		<dependency>
+		  <groupId>org.mybatis.caches</groupId>
+		  <artifactId>mybatis-redis</artifactId>
+		  <version>1.0.0-beta2</version>
+		</dependency>
+		-->
+  		
+		<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+		<!--
+		<dependency>
+		    <groupId>redis.clients</groupId>
+		    <artifactId>jedis</artifactId>
+		    <version>2.9.0</version>
+		</dependency>
+		-->
+
+		<!--
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${}</version>
+		</dependency>
+		-->
+
+		<!--
+		<dependency>
+			<groupId>net.spy</groupId>
+			<artifactId>spymemcached</artifactId>
+			<version>2.12.0</version>
+		</dependency>
+		-->
+		
+		<!--
+		<dependency>
+			<groupId>org.bidtime.utils</groupId>
+			<artifactId>cache-manager</artifactId>
+			<version>${cache-manager.version}</version>
+		</dependency>
+		-->
+
+		<!--
+		<dependency>
+			<groupId>com.googlecode.xmemcached</groupId>
+			<artifactId>xmemcached</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		-->
+
+	</dependencies>
+	<build>
+		<testResources>
+			<testResource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</testResource>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<includes>
+					<include>*.xml</include>
+					<include>*.properties</include>
+				</includes>
+			</testResource>
+		</testResources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>utf8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>true</skipTests>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+					<argLine>-Xmx256m</argLine>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+
+</project>
+  
