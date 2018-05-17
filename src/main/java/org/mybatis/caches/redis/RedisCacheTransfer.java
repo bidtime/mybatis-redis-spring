@@ -15,4 +15,14 @@ public class RedisCacheTransfer {
     RedisCaches.setCluster(cluster);
   }
 
+  @Autowired
+  public void setSerializer(String value) throws Exception {
+    if ("kryo".equalsIgnoreCase(value)) {
+      RedisCaches.setSerializer(KryoSerializer.INSTANCE);
+    } else if (!"jdk".equalsIgnoreCase(value)) {
+      // Custom serializer is not supported yet.
+      throw new Exception("Unknown serializer: '" + value + "'");
+    }
+  }
+
 }

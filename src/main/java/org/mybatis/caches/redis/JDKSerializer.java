@@ -23,37 +23,73 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SerializeUtil {
+public enum JDKSerializer implements Serializer {
+  
+  //Enum singleton, which is preferred approach since Java 1.5
+  INSTANCE;
 
-  private static final Logger log = LoggerFactory.getLogger(SerializeUtil.class);
+  private JDKSerializer() {
+    // prevent instantiation
+  }
 
-  public static byte[] serialize(Object object) {
+  public byte[] serialize(Object object) {
     ObjectOutputStream oos = null;
     ByteArrayOutputStream baos = null;
     try {
-      // 序列化
       baos = new ByteArrayOutputStream();
       oos = new ObjectOutputStream(baos);
       oos.writeObject(object);
-      byte[] bytes = baos.toByteArray();
-      return bytes;
+      return baos.toByteArray();
     } catch (Exception e) {
       log.error("serial:{}, {}", object.getClass().getName(), e.getMessage());
+      return null;
     }
-    return null;
   }
 
-  public static Object unserialize(byte[] bytes) {
+  public Object unserialize(byte[] bytes) {
+    if (bytes == null) {
+      return null;
+    }
     ByteArrayInputStream bais = null;
     try {
-      // 反序列化
       bais = new ByteArrayInputStream(bytes);
       ObjectInputStream ois = new ObjectInputStream(bais);
       return ois.readObject();
     } catch (Exception e) {
       log.error("unserial:{}, {}", bytes, e.getMessage());
+      return null;
     }
-    return null;
   }
+
+  private static final Logger log = LoggerFactory.getLogger(JDKSerializer.class);
+
+//  public static byte[] serialize(Object object) {
+//    ObjectOutputStream oos = null;
+//    ByteArrayOutputStream baos = null;
+//    try {
+//      // 序列化
+//      baos = new ByteArrayOutputStream();
+//      oos = new ObjectOutputStream(baos);
+//      oos.writeObject(object);
+//      byte[] bytes = baos.toByteArray();
+//      return bytes;
+//    } catch (Exception e) {
+//      log.error("serial:{}, {}", object.getClass().getName(), e.getMessage());
+//    }
+//    return null;
+//  }
+//
+//  public static Object unserialize(byte[] bytes) {
+//    ByteArrayInputStream bais = null;
+//    try {
+//      // 反序列化
+//      bais = new ByteArrayInputStream(bytes);
+//      ObjectInputStream ois = new ObjectInputStream(bais);
+//      return ois.readObject();
+//    } catch (Exception e) {
+//      log.error("unserial:{}, {}", bytes, e.getMessage());
+//    }
+//    return null;
+//  }
 
 }

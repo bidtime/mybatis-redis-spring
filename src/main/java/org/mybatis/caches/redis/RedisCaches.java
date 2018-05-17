@@ -44,6 +44,8 @@ public final class RedisCaches implements Cache {
   private String id;
   
   private byte[] idBytes;
+  
+  static private Serializer serializer = JDKSerializer.INSTANCE;
 
   /**
    * 与 spring-data-redis 的 RedisConnectionFactory，结合使用
@@ -122,7 +124,7 @@ public final class RedisCaches implements Cache {
         final byte[] keyBytes = key.toString().getBytes();
         byte[] dataBytes = null;
         if (value != null) {
-          dataBytes = SerializeUtil.serialize(value);
+          dataBytes = serializer.serialize(value);
         }
         success = conn.hSet(idBytes, keyBytes, dataBytes);
         if (timeout != null && conn.ttl(idBytes) == -1) {
@@ -155,7 +157,7 @@ public final class RedisCaches implements Cache {
         Object result = null;
         final byte[] dataBytes = conn.hGet(idBytes, keyBytes);
         if (dataBytes != null) {
-          result = SerializeUtil.unserialize(dataBytes);
+          result = serializer.unserialize(dataBytes);
         }
         if (log.isDebugEnabled()) {
           log.debug("get: {}-{}, {}", id, key, (result == null) ? null : result.getClass().getName());
@@ -254,4 +256,12 @@ public final class RedisCaches implements Cache {
     RedisCaches.factory = factory;
   }
   
+  public Serializer getSerializer() {
+    return serializer;
+  }
+ 
+  public static void setSerializer(Serializer serializer) {
+    RedisCaches.serializer = serializer;
+  }
+ 
 }
