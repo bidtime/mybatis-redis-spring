@@ -243,7 +243,7 @@ public final class RedisCaches implements Cache {
   }
 
   public static void setCluster(boolean cluster) {
-    log.debug("set cluster: {}", cluster);
+    log.debug("cluster: {}", cluster);
     RedisCaches.cluster = cluster;
   }
 
@@ -261,6 +261,7 @@ public final class RedisCaches implements Cache {
   }
  
   public static void setSerializer(Serializer serializer) {
+    log.debug("serializer: {}", serializer.getClass().getSimpleName());
     RedisCaches.serializer = serializer;
   }
  
