@@ -252,7 +252,7 @@ public final class RedisCaches implements Cache {
   }
   
   public static void setRedisConnectionFactory(RedisConnectionFactory factory) {
-    log.debug("factory: {}", factory.getClass().getName());
+    log.debug("factory: {}", factory.getClass().getSimpleName());
     RedisCaches.factory = factory;
   }
   
