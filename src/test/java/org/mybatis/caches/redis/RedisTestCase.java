@@ -19,14 +19,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Test with Ubuntu
  * sudo apt-get install redis-server
  * execute the test
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath*:/spring-*.xml")
 public final class RedisTestCase {
 
   private static final String DEFAULT_ID = "REDIS";
@@ -68,7 +76,7 @@ public final class RedisTestCase {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotCreateCache() {
-    cache = new RedisCaches(null);
+    cache = new RedisCaches((String)null);
   }
 
   @Test
@@ -105,4 +113,39 @@ public final class RedisTestCase {
     assertNull(cache.getObject(2));
     assertNull(cache.getObject(3));
   }
+  
+  private ExecutorService service;
+
+  @Test
+  public void shouldLock() throws Exception {
+    //cache.removeObject("my");
+    for (int i=0; i<100; i++) {
+      Boolean b = cache.lock("my", i);
+      System.out.println(i + ": " + b);
+    }
+  }
+  
+  @Test
+  public void shouldLocks() throws Exception {
+    cache.removeObject("my");
+    service = Executors.newFixedThreadPool(20);
+    
+    for (int i=0;i<100;i++){
+        service.execute(new Runnable() {
+            @Override
+            public void run() {
+              Boolean b = cache.lock("my", 1);
+              System.out.println(Thread.currentThread().getName() + ": " + b);
+              //  task(Thread.currentThread().getName());
+            }
+        });
+    }
+    
+    while (true) {
+      Thread.sleep(0);
+    }
+    
+  }
+
+  
 }
