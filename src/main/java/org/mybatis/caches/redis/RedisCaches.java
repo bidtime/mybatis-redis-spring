@@ -43,6 +43,8 @@ public final class RedisCaches implements Cache {
   private String id;
   
   private byte[] idBytes;
+  
+  static private Serializer serializer = JDKSerializer.INSTANCE;
 
   private Integer timeout;
 
@@ -98,7 +100,11 @@ public final class RedisCaches implements Cache {
         final byte[] keyBytes = key.toString().getBytes();
         byte[] dataBytes = null;
         if (value != null) {
+<<<<<<< HEAD
           dataBytes = RedisCacheTransfer.serialize(value);
+=======
+          dataBytes = serializer.serialize(value);
+>>>>>>> 478a813c95eac14957121ccf9f18a0708e2aec7f
         }
         success = conn.hSet(idBytes, keyBytes, dataBytes);
         if (timeout != null && conn.ttl(idBytes) == -1) {
@@ -186,7 +192,14 @@ public final class RedisCaches implements Cache {
         Object result = null;
         final byte[] dataBytes = conn.hGet(idBytes, keyBytes);
         if (dataBytes != null) {
+<<<<<<< HEAD
           result = RedisCacheTransfer.unserialize(dataBytes);
+=======
+          result = serializer.unserialize(dataBytes);
+        }
+        if (log.isDebugEnabled()) {
+          log.debug("get: {}-{}, {}", id, key, (result == null) ? null : result.getClass().getName());
+>>>>>>> 478a813c95eac14957121ccf9f18a0708e2aec7f
         }
         if (log.isDebugEnabled()) {
           if (result != null) {
@@ -260,8 +273,47 @@ public final class RedisCaches implements Cache {
     this.timeout = timeout;
   }
 
+<<<<<<< HEAD
   public Integer getTimeout() {
     return timeout;
   }
 
+=======
+  public RedisConnectionFactory getFactory() {
+    return factory;
+  }
+
+  @SuppressWarnings("static-access")
+  public void setFactory(RedisConnectionFactory factory) {
+    this.factory = factory;
+  }
+
+  public boolean isCluster() {
+    return cluster;
+  }
+
+  public static void setCluster(boolean cluster) {
+    log.debug("cluster: {}", cluster);
+    RedisCaches.cluster = cluster;
+  }
+
+  public Integer getTimeout() {
+    return timeout;
+  }
+  
+  public static void setRedisConnectionFactory(RedisConnectionFactory factory) {
+    log.debug("factory: {}", factory.getClass().getSimpleName());
+    RedisCaches.factory = factory;
+  }
+  
+  public Serializer getSerializer() {
+    return serializer;
+  }
+ 
+  public static void setSerializer(Serializer serializer) {
+    log.debug("serializer: {}", serializer.getClass().getSimpleName());
+    RedisCaches.serializer = serializer;
+  }
+ 
+>>>>>>> 478a813c95eac14957121ccf9f18a0708e2aec7f
 }

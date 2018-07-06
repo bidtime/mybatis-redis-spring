@@ -15,6 +15,14 @@
  */
 package org.mybatis.caches.redis;
 
+<<<<<<< HEAD
+=======
+/**
+ * 
+ * @author riverbo copy from spring redis
+ * @since 2018.05.05
+ */
+>>>>>>> 478a813c95eac14957121ccf9f18a0708e2aec7f
 public interface Serializer {
 
   /**

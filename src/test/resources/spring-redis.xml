@@ -44,6 +44,8 @@
     <property name="redisConnectionFactory" ref="jedisConnectionFactory"/>
     <!-- redis 服务器是否使用集群 -->
     <property name="cluster" value="false"/>
+    <!-- kryo, jdk -->
+    <property name="serializer" value="kryo"/>
   </bean>
 
 </beans>
