@@ -23,7 +23,6 @@ import org.apache.ibatis.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisCallback;
 
 /**
@@ -45,16 +44,6 @@ public final class RedisCaches implements Cache {
   
   private byte[] idBytes;
 
-  /**
-   * 与 spring-data-redis 的 RedisConnectionFactory，结合使用
-   */
-  private static RedisConnectionFactory factory;
-
-  /*
-   * redis 服务器 是否使用集群
-   */
-  private static boolean cluster = false;
-
   private Integer timeout;
 
   public RedisCaches(final String id) {
@@ -68,31 +57,18 @@ public final class RedisCaches implements Cache {
     }
   }
 
-  private <T> T execute(RedisCallback<T> callback) {
-    RedisConnection conn = null;
-    try {
-      if (!cluster) {
-        conn = factory.getConnection();
-      } else {
-        conn = factory.getClusterConnection();
-      }
-    } catch (Exception e) {
-      log.error("get connection: {}, {}", e.getMessage(), e.getStackTrace());
-      return null;
-    }
-    
-    if (conn == null) {
-      return null;
-    }
+  public RedisCaches(final String id, Integer timeout) {
+    this(id);
+    this.timeout = timeout;
+  }
 
-    try {
-      return (T) callback.doInRedis(conn);
-    } catch (Exception e) {
-      log.error("exceute: {}, {}", e.getMessage(), e.getStackTrace());
-      return null;
-    } finally {
-      conn.close();
-    }
+  public RedisCaches(Integer timeout) {
+    this("");
+    this.timeout = timeout;
+  }
+
+  private <T> T execute(RedisCallback<T> callback) {
+    return RedisCacheTransfer.execute(callback);
   }
 
   @Override
@@ -122,7 +98,7 @@ public final class RedisCaches implements Cache {
         final byte[] keyBytes = key.toString().getBytes();
         byte[] dataBytes = null;
         if (value != null) {
-          dataBytes = SerializeUtil.serialize(value);
+          dataBytes = RedisCacheTransfer.serialize(value);
         }
         success = conn.hSet(idBytes, keyBytes, dataBytes);
         if (timeout != null && conn.ttl(idBytes) == -1) {
@@ -131,19 +107,74 @@ public final class RedisCaches implements Cache {
         if (log.isDebugEnabled()) {
           if (value != null) {
             if (value instanceof Collection) {
-              log.debug("put: {}-{}, {}:size({})", id, key, success, ((Collection)value).size());
+              log.debug("hSet: {}-{}, {}:size({}), tm({})", id, key, success, ((Collection)value).size(), timeout);
             } else {
-              log.debug("put: {}-{}, {}", id, key, success);
+              log.debug("hSet: {}-{}, {}, tm({})", id, key, success, timeout);
             }
           } else {
-            log.debug("put: {}-{}, {}", id, key, success);
+            log.debug("hSet: {}-{}, {}, tm({})", id, key, success, timeout);
           }
         }
         return null;
       }
     });
   }
+  
+//  private static final String LOCK_SUCCESS = "OK";
+//  private static final String SET_IF_NOT_EXIST = "NX";
+//  private static final String SET_WITH_EXPIRE_TIME = "PX";
 
+  /**
+   * 尝试获取分布式锁
+   * @param jedis Redis客户端
+   * @param lockKey 锁
+   * @param requestId 请求标识
+   * @param expireTime 超期时间
+   * @return 是否获取成功
+   */
+//  public static boolean tryGetDistributedLock(String lockKey, String requestId, int expireTime) {
+//
+//      String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
+//
+//      if (LOCK_SUCCESS.equals(result)) {
+//          return true;
+//      }
+//      return false;
+//
+//  }
+  
+  public boolean lock(final Object key, final Object value) {
+    return execute(new RedisCallback<Boolean>() {
+
+      @SuppressWarnings("rawtypes")
+      @Override
+      public Boolean doInRedis(RedisConnection conn) {
+        Boolean success = null;
+        final byte[] keyBytes = key.toString().getBytes();
+        byte[] dataBytes = null;
+        if (value != null) {
+          dataBytes = RedisCacheTransfer.serialize(value);
+        }
+        success = conn.hSetNX(idBytes, keyBytes, dataBytes);
+        if (timeout != null && conn.ttl(idBytes) == -1) {
+          conn.expire(idBytes, timeout);
+        }
+        if (log.isDebugEnabled()) {
+          if (value != null) {
+            if (value instanceof Collection) {
+              log.debug("hSetNX: {}-{}, {}:size({}), tm({})", id, key, success, ((Collection)value).size(), timeout);
+            } else {
+              log.debug("hSetNX: {}-{}, {}, tm({})", id, key, success, timeout);
+            }
+          } else {
+            log.debug("hSetNX: {}-{}, {}, tm({})", id, key, success, timeout);
+          }
+        }
+        return success;
+      }
+    });
+  }
+  
   @Override
   public Object getObject(final Object key) {
     return execute(new RedisCallback<Object>() {
@@ -155,20 +186,17 @@ public final class RedisCaches implements Cache {
         Object result = null;
         final byte[] dataBytes = conn.hGet(idBytes, keyBytes);
         if (dataBytes != null) {
-          result = SerializeUtil.unserialize(dataBytes);
-        }
-        if (log.isDebugEnabled()) {
-          log.debug("get: {}-{}, {}", id, key, (result == null) ? null : result.getClass().getName());
+          result = RedisCacheTransfer.unserialize(dataBytes);
         }
         if (log.isDebugEnabled()) {
           if (result != null) {
             if (result instanceof Collection) {
-              log.debug("get: {}-{}, {}:size({})", id, key, result.getClass().getName(), ((Collection)result).size());
+              log.debug("hGet: {}-{}, {}:size({})", id, key, result.getClass().getSimpleName(), ((Collection)result).size());
             } else {
-              log.debug("get: {}-{}, {}", id, key, result.getClass().getName());
+              log.debug("hGet: {}-{}, {}", id, key, result.getClass().getSimpleName());
             }
           } else {
-            log.debug("get: {}-{}, {}: is null", id, key, (result == null) ? null : result.getClass().getName());
+            log.debug("hGet: {}-{}, {}: is null", id, key, (result == null) ? null : result.getClass().getSimpleName());
           }
         }
         return result;
@@ -185,11 +213,16 @@ public final class RedisCaches implements Cache {
         final byte[] keyBytes = key.toString().getBytes();
         Long l = conn.hDel(idBytes, keyBytes);
         if (log.isDebugEnabled()) {
-          log.debug("del: {}-{}, {}", id, key, (l == null) ? null : l);
+          log.debug("hDel: {}-{}, {}", id, key, (l == null) ? null : l);
         }        
         return l;
       }
     });
+  }
+
+  public boolean unlock(final Object key) {
+    Object l = removeObject(key);
+    return (l != null) ? true : false;
   }
 
   @Override
@@ -227,31 +260,8 @@ public final class RedisCaches implements Cache {
     this.timeout = timeout;
   }
 
-  public RedisConnectionFactory getFactory() {
-    return factory;
-  }
-
-  @SuppressWarnings("static-access")
-  public void setFactory(RedisConnectionFactory factory) {
-    this.factory = factory;
-  }
-
-  public boolean isCluster() {
-    return cluster;
-  }
-
-  public static void setCluster(boolean cluster) {
-    log.debug("set cluster: {}", cluster);
-    RedisCaches.cluster = cluster;
-  }
-
   public Integer getTimeout() {
     return timeout;
   }
-  
-  public static void setRedisConnectionFactory(RedisConnectionFactory factory) {
-    log.debug("factory: {}", factory.getClass().getName());
-    RedisCaches.factory = factory;
-  }
-  
+
 }
