@@ -79,13 +79,35 @@ public class SimpleBeanStudentInfo implements Serializable {
   }
 
   @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + age;
+    result = prime * result + ((courses == null) ? 0 : courses.hashCode());
+    result = prime * result + grade;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((sex == null) ? 0 : sex.hashCode());
+    return result;
+  }
+
+  @Override
   public boolean equals(Object obj) {
-    // TODO Auto-generated method stub
-    if (obj == null)
-      return false;
-    if (!obj.getClass().equals(SimpleBeanStudentInfo.class))
-      return false;
-    return this.toString().equals(obj.toString());
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    SimpleBeanStudentInfo other = (SimpleBeanStudentInfo) obj;
+    if (age != other.age) return false;
+    if (courses == null) {
+      if (other.courses != null) return false;
+    } else if (!courses.equals(other.courses)) return false;
+    if (grade != other.grade) return false;
+    if (name == null) {
+      if (other.name != null) return false;
+    } else if (!name.equals(other.name)) return false;
+    if (sex == null) {
+      if (other.sex != null) return false;
+    } else if (!sex.equals(other.sex)) return false;
+    return true;
   }
 
 }
